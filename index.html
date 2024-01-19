@@ -1,0 +1,168 @@
+<!--
+    @title
+        index.html
+
+    @author
+        typedef
+
+    @description
+        with the GUI module removed and /luar being pushed, injector.lua has been changed to a Web UI
+-->
+<html lang="en">
+<head>
+
+    <!-- title -->
+    <title>Injector</title>
+
+    <!-- stylesheet references -->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono&display=swap" rel="stylesheet">
+
+    <!-- jquery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <!-- basic page styling -->
+    <style>
+        body
+        {
+            background-color: #1a1a1a;
+            font-family: 'Ubuntu Mono', monospace;
+            color: white;
+        }
+
+        .to_center
+        {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        a
+        {
+            text-decoration: none;
+            color: lightblue;
+        }
+
+        #title
+        {
+            font-size: 32px;
+        }
+
+        #sub_title
+        {
+            font-size: 16px;
+        }
+
+        #select_container
+        {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 50px;
+        }
+
+        select
+        {
+            width: 300px;
+            height: 300px;
+        }
+
+        #injectbtn
+        {
+            margin-top: 10px;
+            width: 200px;
+            font-family: Arial, sans-serif;
+        }
+
+        #chk_32, #lbl_chk_32
+        {
+            margin-top: 10px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- web content -->
+<div id="title" class="to_center">injector.lua</div>
+<div id="sub_title" class="to_center">This is a wrapper for fantasy.injector2 (<a target="_blank" href="https://constelia.ai/forums/index.php?threads/software-installation-usage-guide.8114/post-65653">full guide</a>).</div>
+
+<div id="select_container">
+    <div><select id="processes" size="2"></select></div>
+    <div><select id="files" size="2"></select></div>
+</div>
+
+<div class="to_center">
+    <label id="lbl_chk_32" for="chk_32">32-bit</label><input id="chk_32" type="checkbox" />
+</div>
+<div class="to_center">
+    <input id="injectbtn" type="button" value="Inject" />
+</div>
+
+<script>
+    /**
+     * page load
+     */
+    $(document).ready(function() {
+
+        /**
+         * get the files in our Sessions directory.
+         * @type {{files: boolean}}
+         */
+        let post_data = {
+            files: true
+        };
+        $.post("http://localhost:9282/luar", JSON.stringify(post_data), function (data) {
+
+            $.each(data, function (index, value) {
+                $("#files").append(new Option(value, value));
+            });
+        });
+
+        /**
+         * get all running processes
+         * @type {{processes: boolean}}
+         */
+        post_data = {
+            processes: true
+        }
+        $.post("http://localhost:9282/luar", JSON.stringify(post_data), function (data) {
+
+            $.each(data, function (index, value) {
+                $("#processes").append(new Option(value, value));
+            });
+        });
+    });
+
+    $("#injectbtn").click(function() {
+
+        /**
+         * assure a process and file was selected.
+         * @type {*|jQuery}
+         */
+        const selected_process = $("#processes option:selected").val();
+        const selected_file = $("#files option:selected").val();
+        if( !selected_process || !selected_file )
+        {
+            alert("You must select a process and a file.");
+            return;
+        }
+
+        /**
+         * send data
+         * @type {{injected_process: (*|jQuery), injected_file: (*|jQuery), is_32: (*|jQuery)}}
+         */
+        const post_data = {
+            injected_process: selected_process,
+            injected_file: selected_file,
+            is_32: $("#chk_32").prop("checked")
+        };
+        $.post("http://localhost:9282/luar", JSON.stringify(post_data), function(data) {
+            alert( "See Universe4 terminal/console." );
+        });
+    });
+</script>
+</body>
+
+</html>
